@@ -1,0 +1,603 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CXT Competency Self-Assessment</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: #f7f8fa;
+    color: #1f2328;
+    margin: 0;
+    padding: 24px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: #5b6270; margin-bottom: 20px; font-size: 14px; }
+  .card {
+    background: #fff;
+    border: 1px solid #e3e5e8;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: #e8eaed;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #3B82F6;
+    transition: width .25s ease;
+  }
+  .progress-label { font-size: 12px; color: #767c88; margin-bottom: 6px; }
+  label.field-label { display:block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color:#333; }
+  input[type=text], input[type=email] {
+    width: 100%; padding: 10px 12px; border: 1px solid #d6d9dd; border-radius: 8px;
+    font-size: 14px; margin-bottom: 16px;
+  }
+  .skill-title { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+  .skill-domain { font-size: 12px; color: #8a8f98; margin-bottom: 18px; }
+  .subskill-block { padding: 14px 0; border-top: 1px solid #eef0f2; }
+  .subskill-block:first-of-type { border-top: none; }
+  .subskill-name { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .def-list { background:#f7f8fa; border:1px solid #eef0f2; border-radius:8px; padding:10px 12px; margin-bottom:10px; }
+  .def-item { font-size: 12.5px; color:#4a505a; line-height:1.5; margin-bottom:6px; }
+  .def-item:last-child { margin-bottom:0; }
+  .def-num { display:block; font-weight:700; color:#1f2328; font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; }
+  .rating-row { display:flex; align-items:center; gap: 10px; margin-bottom: 8px; }
+  .rating-row .rlabel { width: 70px; font-size: 12px; color:#5b6270; }
+  .btn-group { display:flex; gap:6px; }
+  .lvl-btn {
+    border: 1px solid #d6d9dd; background:#fff; border-radius: 8px;
+    padding: 6px 12px; font-size: 13px; cursor:pointer; color:#333;
+  }
+  .lvl-btn.cur.selected { background:#3B82F6; border-color:#3B82F6; color:#fff; }
+  .lvl-btn.des.selected { background:#22C55E; border-color:#22C55E; color:#fff; }
+  .nav-row { display:flex; justify-content: space-between; margin-top: 8px; }
+  button.nav {
+    padding: 10px 20px; border-radius: 8px; border: 1px solid #d6d9dd;
+    background: #fff; font-size: 14px; cursor: pointer;
+  }
+  button.nav.primary { background:#1f2328; color:#fff; border-color:#1f2328; }
+  button.nav:disabled { opacity:.4; cursor:not-allowed; }
+  .legend-hint { font-size: 12px; color:#8a8f98; margin-bottom: 14px; }
+  .step-error { color:#dc2626; font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .subskill-block.incomplete { background:#fff7f3; border-radius:8px; padding-left:10px; padding-right:10px; margin-left:-10px; margin-right:-10px; }
+  .attach-warning { background:#fff4e5; border:1px solid #f5c372; border-radius:8px; padding:12px 14px; font-size:13px; color:#7a4a00; margin-top:18px; text-align:left; }
+  #resultsCard { display:none; text-align:center; }
+  .chart-wrap { position: relative; height: 420px; max-width: 560px; margin: 0 auto; }
+  .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+  .analysis-block { text-align:left; margin-top: 24px; }
+  .analysis-section { margin-bottom: 18px; }
+  .analysis-section h3 { font-size: 14px; margin: 0 0 8px 0; }
+  .analysis-section ol { margin: 0; padding-left: 20px; }
+  .analysis-section li { font-size: 13.5px; line-height: 1.5; margin-bottom: 6px; color:#333; }
+  .analysis-summary { font-size: 14px; line-height: 1.6; color:#2a2f37; background:#f7f8fa; border-radius:8px; padding:14px 16px; margin-bottom:20px; }
+  .action-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top: 16px;}
+  .action-btn {
+    padding: 10px 18px; border-radius: 8px; border:1px solid #d6d9dd; background:#fff;
+    font-size:14px; cursor:pointer; display:inline-block; text-decoration:none; color:#1f2328;
+  }
+  .action-btn.primary { background:#1f2328; color:#fff; border-color:#1f2328; }
+  textarea#resultsText { width:100%; height:160px; font-family: monospace; font-size:12px; border:1px solid #d6d9dd; border-radius:8px; padding:10px; margin-top:14px; display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Know Your CXT Competency</h1>
+  <div class="sub">Rate yourself 1 (Basic), 2 (Intermediate), or 3 (Advanced) on each sub-skill, for where you are today and where you want to be. Takes about 5-8 minutes.</div>
+
+  <div id="formCard" class="card">
+    <div class="progress-label" id="progressLabel"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div id="stepContent"></div>
+    <div class="nav-row">
+      <button class="nav" id="backBtn" onclick="goBack()">Back</button>
+      <button class="nav primary" id="nextBtn" onclick="goNext()">Next</button>
+    </div>
+  </div>
+
+  <div class="card" id="resultsCard">
+    <h2 style="margin-top:0;">Your Competency Self-Assessment</h2>
+    <div class="chart-wrap"><canvas id="radarCanvas"></canvas></div>
+    <div id="analysisBlock" class="analysis-block"></div>
+    <div class="attach-warning">
+      <strong>One more step:</strong> download your chart below, click "Email my results" to open an email already filled in and addressed to the assessment owner, then drag your downloaded chart into that email before hitting Send. Browsers can't attach files to an email automatically, so that drag-in step can't be skipped.
+    </div>
+    <div class="action-row">
+      <button class="action-btn primary" onclick="downloadChart()">Download my chart (image)</button>
+      <a class="action-btn" id="emailLink" href="#" target="_blank" rel="noopener">Email my results</a>
+      <button class="action-btn" onclick="copyResults()">Copy results as text</button>
+    </div>
+    <textarea id="resultsText" readonly></textarea>
+  </div>
+</div>
+
+<script>
+const STRUCTURE = [
+  ["General CX Consulting","Project/Program Management","Planning & Governance"],
+  ["General CX Consulting","Project/Program Management","Risk Management"],
+  ["General CX Consulting","Project/Program Management","Stakeholder Management"],
+  ["General CX Consulting","Project/Program Management","Reporting & Steering"],
+  ["General CX Consulting","Project/Program Management","CXT delivery, enhanced by AI"],
+  ["General CX Consulting","Business Analysis","Requirement definition"],
+  ["General CX Consulting","Business Analysis","Process mapping"],
+  ["General CX Consulting","Storytelling","Storytelling"],
+  ["General CX Consulting","Change Management","Stakeholder Adoption"],
+  ["General CX Consulting","Change Management","Communication Planning"],
+  ["General CX Consulting","Business Case Development","Financial Modelling"],
+  ["General CX Consulting","Business Case Development","Benefits Management and Realisation"],
+  ["General CX Consulting","Root Cause Analysis & problem solving","Problem Structuring and Solving"],
+  ["General CX Consulting","Root Cause Analysis & problem solving","Hypothesis-driven Analysis"],
+  ["General CX Consulting","SAFe","Agile Ways of Working"],
+  ["General CX Consulting","CX fundamentals","Agentic CX"],
+  ["General CX Consulting","CX fundamentals","Personas"],
+  ["General CX Consulting","CX fundamentals","Journeys"],
+  ["CX Strategy & Performance","Operating Model Design","Roles & Responsibilities (RACI)"],
+  ["CX Strategy & Performance","Operating Model Design","People, Process & Platform Design"],
+  ["CX Strategy & Performance","Operating Model Design","Capability mapping & assessment"],
+  ["CX Strategy & Performance","CX Strategy & Transformation","Customer Transformation Planning"],
+  ["CX Strategy & Performance","CX Strategy & Transformation","CX Vision"],
+  ["CX Strategy & Performance","CX Strategy & Transformation","Service Blueprinting"],
+  ["CX Strategy & Performance","CX Strategy & Transformation","Product & MVP Roadmapping"],
+  ["CX Strategy & Performance","CX Strategy & Transformation","Tech-enabled CX transformation"],
+  ["CX Strategy & Performance","CX Performance & Measurement","Commercial Analysis"],
+  ["CX Strategy & Performance","CX Performance & Measurement","Customer Satisfaction"],
+  ["CX Strategy & Performance","CX Performance & Measurement","Quantitative Measurement"],
+  ["CX Strategy & Performance","Loyalty","Loyalty Strategy & Framework"],
+  ["CX Strategy & Performance","Loyalty","Loyalty Enablers (eg. Platforms)"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Marketing Strategy"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Martech - General"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Martech - Adobe"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Customer Insights"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Marketing automation & Campaign management"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Data-driven & Performance Marketing"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Sales measurement & performance"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Sales Enablement"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Marketing measurement & performance"],
+  ["Marketing, Sales & Commerce","Sales & Marketing Transformation","Segmentation"],
+  ["Marketing, Sales & Commerce","GTM Strategy","Physical & Digital Product GTM Strategy"],
+  ["Marketing, Sales & Commerce","GTM Strategy","Channel strategy"],
+  ["Marketing, Sales & Commerce","Commerce","Commercialization & pricing"],
+  ["Marketing, Sales & Commerce","Commerce","Commerce strategy"],
+  ["Customer Service Transformation &CRM","Customer Service Strategy","Customer Service Strategy"],
+  ["Customer Service Transformation &CRM","Customer Service Strategy","Customer Service Operating Model"],
+  ["Customer Service Transformation &CRM","Customer Service Strategy","Customer Service Technology - General"],
+  ["Customer Service Transformation &CRM","Customer Service Strategy","Knowledge Management"],
+  ["Customer Service Transformation &CRM","Customer Service Strategy","Customer Service Performance"],
+  ["Customer Service Transformation &CRM","Customer Service Operations","Workforce management"],
+  ["Customer Service Transformation &CRM","Next-Gen Customer Service","Advanced Assistant & Self service"],
+  ["Customer Service Transformation &CRM","CRM","CRM Strategy"],
+  ["Customer Service Transformation &CRM","CRM","CRM Operating Model"],
+  ["Customer Service Transformation &CRM","CRM","CRM technologies - General"],
+  ["Customer Service Transformation &CRM","CRM","CRM technologies - Salesforce"],
+  ["Customer Service Transformation &CRM","CRM","CRM data foundations"],
+  ["Customer Service Transformation &CRM","Next Gen CRM","Agentic CRM"],
+  ["Customer Service Transformation &CRM","Next Gen CRM","Omnichannel Hyper personalization"],
+];
+
+const DEFINITIONS = {
+  "Project/Program Management|||Planning & Governance": ["Support basic project plans, schedules, and status trackers under guidance, focusing on tasks, owners, and due dates.","Independently plan and govern medium-sized projects, define scope, milestones, RAID logs, and run regular governance routines.","Architect governance models and planning approaches for complex programs, optimize portfolio trade-offs, and coach others on best-practice governance."],
+  "Project/Program Management|||Risk Management": ["List obvious risks, capture them in a simple log, and escalate issues to seniors when impacts are unclear.","Assess likelihood/impact, propose mitigation plans, track risk status, and engage stakeholders to reduce exposure.","Design risk frameworks, anticipate systemic risks, embed risk thinking in governance, and steer senior stakeholders through complex trade-offs."],
+  "Project/Program Management|||Stakeholder Management": ["Map basic stakeholder lists, note their roles and expectations, and support meeting logistics and follow-ups.","Analyze stakeholder interests and power, build engagement plans, manage expectations, and handle routine conflicts.","Strategically shape stakeholder coalitions, navigate politics, resolve high-stakes conflicts, and act as trusted advisor to senior leaders."],
+  "Project/Program Management|||Reporting & Steering": ["Prepare basic status reports, dashboards, and meeting notes using existing templates.","Design reporting packs, highlight risks and decisions, and run effective steering meetings.","Architect end-to-end performance and steering frameworks, align KPIs and forums, and influence executive decision-making."],
+  "Project/Program Management|||CXT delivery, enhanced by AI": ["Understands CX transformation basics and identifies simple AI use cases supporting delivery tracking.","Manages AI-enabled CX initiatives end-to-end, aligning use cases to journey improvements and measurable KPIs.","Designs enterprise AI-driven CX roadmaps integrating predictive, generative, and automation capabilities with ROI ownership."],
+  "Business Analysis|||Requirement definition": ["Documents clear functional/non-functional requirements and user stories with basic stakeholder input.","Leads requirement workshops, manages scope, and aligns requirements to business outcomes and KPIs.","Shapes enterprise requirement governance, aligns strategy to execution, and coaches others in complex programs."],
+  "Business Analysis|||Process mapping": ["Creates basic process flow diagrams (e.g., current-state workflows) and identifies key activities, actors, and handoffs with guidance.","Independently develops detailed end-to-end process maps, identifies bottlenecks and improvement opportunities, and links processes to systems and KPIs.","Leads enterprise-level process mapping and redesign initiatives, integrates cross-functional workflows with strategy and technology, and drives process optimization and transformation outcomes."],
+  "Storytelling|||Storytelling": ["Create simple, logical slides or emails with a beginning, middle, and end, following a provided storyline.","Design end-to-end narratives, craft key messages, and tailor stories to different audiences and channels.","Shape strategic narratives for executives, influence critical decisions, and coach teams in narrative techniques."],
+  "Change Management|||Stakeholder Adoption": ["Support basic adoption activities like training logistics, FAQs, and collecting feedback from users.","Design and execute adoption plans, segment stakeholders, and address common resistance patterns.","Orchestrate enterprise-wide adoption strategies, align incentives and culture, and sustain change over long horizons."],
+  "Change Management|||Communication Planning": ["Draft simple messages, emails, and updates based on templates and guidance.","Create channel-specific comms plans, sequencing messages, and tailoring content to stakeholder groups.","Build integrated communication strategies for complex programs, manage messaging risk, and advise senior leaders on communication tone and timing."],
+  "Business Case Development|||Financial Modelling": ["Populate basic spreadsheets, apply simple formulas, and validate numbers against source data.","Design drivers-based models, build scenarios, and translate assumptions into financial metrics such as NPV and payback.","Architect robust financial models for portfolios, stress-test assumptions, link to P&L/BS impacts, and challenge business assumptions with data."],
+  "Business Case Development|||Benefits Management and Realisation": ["Help define simple KPIs, track them in reports, and flag deviations from targets.","Design benefits frameworks, assign owners, create baselines, and monitor realization plans over time.","Embed benefits realization into governance, challenge benefit logic, and optimize portfolios based on realized value vs. plan."],
+  "Root Cause Analysis & problem solving|||Problem Structuring and Solving": ["Restate problems clearly, list possible issue areas, and organize them with guidance.","Independently frame problems, define hypotheses, and structure work into logical workstreams.","Reframe complex strategic issues, rapidly structure ambiguous situations, and coach others on problem definition and scoping."],
+  "Root Cause Analysis & problem solving|||Hypothesis-driven Analysis": ["Work with given hypotheses, run basic analyses, and report whether data supports or challenges assumptions.","Generate hypotheses, prioritize them, design analyses, and iterate as new evidence emerges.","Lead hypothesis-driven investigations in highly ambiguous contexts, integrate qualitative and quantitative signals, and pivot problem framing as needed."],
+  "SAFe|||Agile Ways of Working": ["Participate in agile ceremonies, maintain simple boards, and complete tasks within a sprint.","Facilitate agile routines, refine backlogs, remove blockers, and adapt plans based on feedback.","Design agile delivery models for programs, scale agile practices across teams, and blend agile with traditional governance."],
+  "CX fundamentals|||Agentic CX": ["Understands differences between rule-based automation and agentic AI systems and identifies simple use cases.","Designs AI-agent-enabled journeys with governance, escalation logic, and brand alignment.","Architects scalable autonomous CX ecosystems integrating LLMs, predictive AI, and workflow automation with ethical oversight."],
+  "CX fundamentals|||Personas": ["Assist in collecting customer insights and populate basic persona templates.","Synthesize research into robust personas, validate them with data, and use them in design discussions.","Define persona frameworks across markets, link personas to data models and journeys, and embed them in strategic decision-making."],
+  "CX fundamentals|||Journeys": ["Contribute to current-state journey maps and capture pain points and emotions.","Design target journeys, identify moments that matter, and prioritize journey-level improvements.","Orchestrate multi-journey design, link journeys to operating model and tech, and govern continuous journey optimization."],
+  "Operating Model Design|||Roles & Responsibilities (RACI)": ["Capture simple RACI information under guidance and validate roles with stakeholders.","Design RACIs for processes or projects, resolve overlaps, and communicate role clarity.","Redesign roles across functions, align RACIs with strategy and governance, and handle politically sensitive role negotiations."],
+  "Operating Model Design|||People, Process & Platform Design": ["Document current processes with flow diagrams and identify obvious pain points.","Design target processes, define inputs/outputs, roles, and controls, and test designs with stakeholders.","Architect cross-functional operating models, integrate process, org, and tech changes, and drive continuous improvement."],
+  "Operating Model Design|||Capability mapping & assessment": ["Understands capability mapping concepts and supports creation of basic capability maps and simple maturity assessments.","Develops detailed capability maps, conducts structured maturity assessments, and identifies capability gaps linked to strategic objectives.","Leads enterprise capability modeling and benchmarking, prioritizes capability investments, and aligns capability roadmap to operating model transformation."],
+  "CX Strategy & Transformation|||Customer Transformation Planning": ["Support data gathering, as-is assessments, and documentation of identified initiatives.","Co-create CX roadmaps, prioritize initiatives, define waves, and link to business outcomes.","Lead holistic CX transformation planning, align multiple stakeholders, and integrate CX with digital, data, and operating model change."],
+  "CX Strategy & Transformation|||CX Vision": ["Support benchmark research, voice-of-customer synthesis, and preparation of CX vision materials.","Define CX principles, segment priorities, and connect CX goals to KPIs and initiatives.","Set enterprise-wide CX ambition, integrate brand, product, and service experience, and influence C-suite decisions on CX."],
+  "CX Strategy & Transformation|||Service Blueprinting": ["Creates simple service blueprints identifying touchpoints, frontstage/backstage activities, and pain points.","Facilitates workshops mapping cross-functional dependencies and linking insights to KPIs.","Uses blueprinting to drive large-scale transformation and future-state service ecosystem design embedded in governance."],
+  "CX Strategy & Transformation|||Product & MVP Roadmapping": ["Help maintain simple roadmaps, update feature lists, and track delivery dates.","Define MVP scope, prioritize features, and build roadmaps aligned to customer and business outcomes.","Set multi-year product strategies, balance competing demands, and optimize MVP and roadmap decisions across portfolios."],
+  "CX Strategy & Transformation|||Tech-enabled CX transformation": ["Understands CX transformation concepts and identifies how technology can support improvements in customer journeys and interactions.","Designs and delivers CX transformation initiatives integrating digital platforms, data insights, and automation to improve experience and operational efficiency.","Leads enterprise CX transformation programs, aligning technology ecosystems, operating models, and strategy to deliver scalable and measurable customer value."],
+  "CX Performance & Measurement|||Commercial Analysis": ["Gather and clean commercial data, create simple reports, and highlight basic trends.","Analyze revenue, margin, and volume drivers, and connect CX initiatives to commercial outcomes.","Model complex commercial scenarios, design pricing/offer strategies informed by CX, and advise leadership on CX-commercial trade-offs."],
+  "CX Performance & Measurement|||Customer Satisfaction": ["Interprets basic CSAT/NPS scores, helps collect feedback, and summarizes simple customer pain points.","Designs satisfaction measurement approaches, segments results by journey or segment, and partners with teams to address key drivers.","Shapes enterprise-wide CX measurement frameworks, links satisfaction to financial outcomes, and drives continuous improvement at scale."],
+  "CX Performance & Measurement|||Quantitative Measurement": ["Understands common CX metrics (e.g., NPS, CSAT, CES) and supports data collection and basic reporting.","Analyzes CX performance data, builds dashboards, and identifies insights linking customer metrics to operational and business outcomes.","Designs comprehensive CX measurement frameworks, integrates multiple data sources, and uses advanced analytics to guide strategic improvements."],
+  "Loyalty|||Loyalty Strategy & Framework": ["Describes basic loyalty constructs like tiers, points, and rewards, and documents existing program elements.","Designs or refines loyalty value propositions, tier structures, and key metrics aligned to customer and business goals.","Architectures holistic loyalty ecosystems across channels and partners, optimizes economics, and evolves frameworks based on insights and market change."],
+  "Loyalty|||Loyalty Enablers (eg. Platforms)": ["Understands core components of a loyalty platform and supports configuration, data integrity checks, and basic campaign setups.","Translates business and CX requirements into platform features, manages integrations, and troubleshoots operational issues.","Defines platform roadmaps, evaluates vendors, orchestrates complex integrations, and ensures the platform underpins advanced personalization and analytics."],
+  "Sales & Marketing Transformation|||Marketing Strategy": ["Supports channel plans, calendars, and budget tracking, and follows established operating routines.","Crafts integrated marketing plans, aligns stakeholders, and improves workflows, governance, and resource allocation.","Designs marketing operating models, aligns structure, capabilities, and partners to strategy, and optimizes investment across portfolios."],
+  "Sales & Marketing Transformation|||Martech - General": ["Knows core tools in the stack, performs basic configurations, and executes standard use cases.","Maps martech capabilities to marketing and CX needs, manages integrations, and champions adoption of key tools.","Defines martech strategy and architecture, selects platforms, and orchestrates a scalable, interoperable stack across markets and channels."],
+  "Sales & Marketing Transformation|||Martech - Adobe": ["Understands core Adobe tools and supports campaign execution and segmentation reporting.","Designs integrated marketing journeys and configures automation and personalization workflows aligned to operating model.","Defines enterprise Martech architecture strategy and optimizes omnichannel orchestration with measurable ROI impact."],
+  "Sales & Marketing Transformation|||Customer Insights": ["Produces basic reports and dashboards, and highlights obvious trends and anomalies.","Designs analytical approaches, derives insights from multiple data sources, and translates findings into clear marketing actions.","Sets the vision and standards for insight-driven marketing, integrating advanced analytics, experimentation, and always-on learning into decision-making."],
+  "Sales & Marketing Transformation|||Marketing automation & Campaign management": ["Builds or executes simple campaigns from templates, configures basic triggers, and monitors deliverability metrics.","Designs lifecycle programs, manages complex campaign logic, tests variants, and optimizes for engagement and conversion.","Leads automation strategy, standardizes campaign architectures, scales omnichannel journeys, and drives continuous uplift through experimentation."],
+  "Sales & Marketing Transformation|||Data-driven & Performance Marketing": ["Manages basic campaigns with standard bidding and targeting options, and reports on core KPIs.","Optimizes performance channels and creatives, manages budgets dynamically, and runs structured tests to improve ROI.","Shapes multi-channel growth strategies, integrates performance and brand marketing, and leads advanced optimization across the funnel."],
+  "Sales & Marketing Transformation|||Sales measurement & performance": ["Prepares regular sales reports, validates data, and highlights basic performance gaps.","Designs sales scorecards, analyzes drivers of performance, and partners with sales leaders to address issues.","Builds performance management systems, aligns incentives and territories, and steers strategic decisions using deep sales analytics."],
+  "Sales & Marketing Transformation|||Sales Enablement": ["Organizes and distributes sales materials, coordinates training sessions, and captures feedback from reps.","Develops enablement programs, builds playbooks, and measures impact on conversion and productivity.","Creates holistic enablement strategies, integrates tools and content into workflows, and partners with leadership to uplift sales capabilities at scale."],
+  "Sales & Marketing Transformation|||Marketing measurement & performance": ["Supports metric tracking and dashboard updates, and documents campaign outcomes.","Designs measurement frameworks, attribution approaches, and performance reviews to inform optimization.","Leads marketing effectiveness strategy, shapes investment decisions, and unifies measurement across channels and business units."],
+  "Sales & Marketing Transformation|||Segmentation": ["Understands basic segmentation concepts and supports creation of simple segments using demographic or behavioral data.","Develops data-driven customer segments, analyzes segment performance, and aligns segmentation with marketing campaigns and sales strategies.","Designs advanced segmentation frameworks using multiple data sources and analytics to guide targeting, personalization, and growth strategies."],
+  "GTM Strategy|||Physical & Digital Product GTM Strategy": ["Contributes to launch plans, coordinates basic activities, and updates GTM documentation.","Designs GTM strategies across channels, aligns stakeholders, and sequences activities for impact.","Orchestrates complex multi-market GTM approaches, integrates partners and ecosystems, and continually refines GTM based on performance and insights."],
+  "GTM Strategy|||Channel strategy": ["Documents channel footprints, tracks basic performance, and supports partner or channel operations.","Evaluates channel performance, recommends changes to mix and roles, and coordinates cross-channel initiatives.","Develops channel strategies, negotiates partner models, and aligns distribution decisions with broader commercial and CX goals."],
+  "Commerce|||Commercialization & pricing": ["Maintains price lists, applies standard discount rules, and supports price change rollouts.","Conducts pricing and elasticity analyses, recommends pricing tactics, and monitors impact on demand and margin.","Designs comprehensive commercialization and pricing strategies, runs experiments, and aligns pricing with brand, CX, and value objectives."],
+  "Commerce|||Commerce strategy": ["Summarizes existing commerce approaches and supports documentation of initiatives and KPIs.","Shapes channel and proposition strategies, aligns them with customer needs and financial targets, and monitors performance.","Sets long-term commerce direction, integrates digital and physical models, and orchestrates investments across platforms, partners, and experiences."],
+  "Customer Service Strategy|||Customer Service Strategy": ["Describes current service approach and helps document customer journeys, SLAs, and policies.","Defines service strategies for segments or channels, aligns on SLAs, and links strategy to operating model and KPIs.","Leads enterprise service strategy, integrates human and digital service, and aligns service with brand, CX, and commercial objectives."],
+  "Customer Service Strategy|||Customer Service Operating Model": ["Documents current structures and responsibilities, and supports role or process mapping.","Designs target operating models for service functions, including roles, locations, and governance.","Reimagines end-to-end service operating models, including sourcing, location, and partner strategies, and leads complex transitions."],
+  "Customer Service Strategy|||Customer Service Technology - General": ["Uses core tools effectively and provides feedback on issues, gaps, and enhancement needs.","Translates service requirements into technology needs, supports selection and implementation, and drives adoption.","Defines long-term service tech strategy and architecture, integrates AI and automation, and ensures technology enables differentiated CX."],
+  "Customer Service Strategy|||Knowledge Management": ["Understands the purpose of knowledge bases and supports creating or updating simple articles and documentation.","Manages knowledge content structure, ensures accuracy and usability of articles, and supports agent adoption and continuous improvement.","Designs scalable knowledge management frameworks, integrates knowledge with service workflows and digital channels, and drives continuous improvement through insights and governance."],
+  "Customer Service Strategy|||Customer Service Performance": ["Tracks standard KPIs, updates dashboards, and escalates obvious performance issues.","Designs performance scorecards, analyzes drivers, and works with leaders to improve results.","Builds holistic performance frameworks linking operational, financial, and CX metrics, and uses them to steer strategic decisions."],
+  "Customer Service Operations|||Workforce management": ["Understands workforce management concepts and supports basic activities such as schedule tracking, attendance monitoring, and simple reporting.","Manages forecasting, scheduling, and performance monitoring to balance workload, staffing levels, and service KPIs.","Designs workforce management strategies, improves forecasting accuracy, and optimizes staffing models to enhance efficiency and service quality."],
+  "Next-Gen Customer Service|||Advanced Assistant & Self service": ["Understands basic self-service tools (FAQs, chatbots) and supports use of assistant tools that help agents access information and resolve queries faster.","Implements and improves AI assistants and self-service journeys to reduce contact volumes and support agent training and productivity.","Designs scalable assistant and self-service strategies that automate resolutions, enhance agent capability through guided support, and significantly reduce cost-to-serve."],
+  "CRM|||CRM Strategy": ["Documents current CRM usage and processes, and supports requirements gathering.","Defines CRM objectives, use cases, and adoption approaches, and aligns stakeholders around the roadmap.","Sets enterprise CRM strategy, aligns it with CX and data agendas, and steers investments and operating model changes."],
+  "CRM|||CRM Operating Model": ["Documents current CRM usage and processes, and supports requirements gathering.","Defines CRM objectives, use cases, and adoption approaches, and aligns stakeholders around the roadmap.","Sets enterprise CRM strategy, aligns it with CX and data agendas, and steers investments and operating model changes."],
+  "CRM|||CRM technologies - General": ["Navigates core CRM modules, maintains accurate records, and raises usability or data issues.","Maps capabilities to business needs, supports design and roll-out, and drives continuous enhancement.","Defines CRM tech architecture, evaluates and selects platforms, and orchestrates complex multi-cloud or multi-system landscapes."],
+  "CRM|||CRM technologies - Salesforce": ["Understands core objects and clouds, performs reporting, and supports basic configuration.","Configures automation, integrations, and lifecycle processes aligned to business KPIs.","Defines enterprise CRM architecture, integrates with AI and Martech platforms, and drives revenue operations transformation."],
+  "CRM|||CRM data foundations": ["Maintains data hygiene through correct entry and basic checks, and follows data standards.","Designs data structures and flows for CRM and CDP use cases, and collaborates on data quality and identity resolution.","Leads data strategy for CRM and CDP, governs data use and consent, and scales advanced activation, analytics, and personalization."],
+  "Next Gen CRM|||Agentic CRM": ["Uses configured features as intended and shares clear feedback on gaps or friction points.","Designs requirements, configures objects, fields, workflows, and light customizations, and tests thoroughly.","Sets configuration and customization standards, oversees complex extensions, and balances flexibility with maintainability and governance."],
+  "Next Gen CRM|||Omnichannel Hyper personalization": ["Works with predefined segments and simple rules-based personalization in campaigns or journeys.","Designs and operates rule- and model-driven personalization, orchestrating content, channels, and triggers across touchpoints.","Leads vision and operating model for large-scale 1:1 personalization, integrating AI, real-time decisioning, and experimentation across the enterprise."],
+};
+
+const LEVELS = [[1,"Basic"],[2,"Intermediate"],[3,"Advanced"]];
+
+// Build ordered unique skill list + skill -> subskills map
+const skillOrder = [];
+const skillMap = {};
+STRUCTURE.forEach(([domain, skill, sub]) => {
+  if (!skillMap[skill]) { skillMap[skill] = { domain, subs: [] }; skillOrder.push(skill); }
+  skillMap[skill].subs.push(sub);
+});
+
+// answers[skill][sub] = {current: n, desired: n}
+const answers = {};
+skillOrder.forEach(skill => {
+  answers[skill] = {};
+  skillMap[skill].subs.forEach(sub => { answers[skill][sub] = { current: null, desired: null }; });
+});
+
+let respondent = { name:"", email:"", manager:"" };
+
+// steps: 0 = intake, 1..19 = skills, 20 = done (handled separately by submit)
+const totalSteps = skillOrder.length + 1;
+let step = 0;
+
+function renderStep() {
+  const content = document.getElementById("stepContent");
+  const pct = Math.round((step / totalSteps) * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+
+  if (step === 0) {
+    document.getElementById("progressLabel").textContent = "Step 1 of " + totalSteps + " — About you";
+    content.innerHTML = `
+      <label class="field-label">Your name</label>
+      <input type="text" id="inName" value="${respondent.name}">
+      <label class="field-label">Your email</label>
+      <input type="email" id="inEmail" value="${respondent.email}">
+      <label class="field-label">Your manager's email (so we can share your results with them later)</label>
+      <input type="email" id="inManager" value="${respondent.manager}">
+      <div id="stepError" class="step-error"></div>
+    `;
+    document.getElementById("backBtn").disabled = true;
+    document.getElementById("nextBtn").textContent = "Next";
+    return;
+  }
+
+  const skill = skillOrder[step - 1];
+  document.getElementById("progressLabel").textContent =
+    "Step " + (step + 1) + " of " + totalSteps + " — " + skill;
+  document.getElementById("backBtn").disabled = false;
+
+  let html = `<div class="skill-domain">${skillMap[skill].domain}</div>
+              <div class="skill-title">${skill}</div>
+              <div class="legend-hint">1 = Basic &nbsp;·&nbsp; 2 = Intermediate &nbsp;·&nbsp; 3 = Advanced</div>`;
+
+  skillMap[skill].subs.forEach(sub => {
+    const defKey = skill + "|||" + sub;
+    const defs = DEFINITIONS[defKey] || ["", "", ""];
+    html += `<div class="subskill-block">
+      <div class="subskill-name">${sub}</div>
+      <div class="def-list">
+        <div class="def-item"><span class="def-num">1 · Basic</span>${defs[0]}</div>
+        <div class="def-item"><span class="def-num">2 · Intermediate</span>${defs[1]}</div>
+        <div class="def-item"><span class="def-num">3 · Advanced</span>${defs[2]}</div>
+      </div>
+      <div class="rating-row">
+        <div class="rlabel">Current</div>
+        <div class="btn-group">
+          ${LEVELS.map(([n]) => `<button type="button" class="lvl-btn cur" data-sub="${sub}" data-kind="current" data-val="${n}" onclick="setLevel(this)">${n}</button>`).join("")}
+        </div>
+      </div>
+      <div class="rating-row">
+        <div class="rlabel">Desired</div>
+        <div class="btn-group">
+          ${LEVELS.map(([n]) => `<button type="button" class="lvl-btn des" data-sub="${sub}" data-kind="desired" data-val="${n}" onclick="setLevel(this)">${n}</button>`).join("")}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += `<div id="stepError" class="step-error"></div>`;
+  content.innerHTML = html;
+
+  // restore selected state
+  skillMap[skill].subs.forEach(sub => {
+    ["current","desired"].forEach(kind => {
+      const val = answers[skill][sub][kind];
+      if (val) {
+        const btn = content.querySelector(`.lvl-btn[data-sub="${CSS.escape(sub)}"][data-kind="${kind}"][data-val="${val}"]`);
+        if (btn) btn.classList.add("selected");
+      }
+    });
+  });
+
+  document.getElementById("nextBtn").textContent = (step === totalSteps - 1) ? "See my chart" : "Next";
+}
+
+function setLevel(btn) {
+  const sub = btn.getAttribute("data-sub");
+  const kind = btn.getAttribute("data-kind");
+  const val = parseInt(btn.getAttribute("data-val"), 10);
+  const skill = skillOrder[step - 1];
+  answers[skill][sub][kind] = val;
+
+  // update classes for this sub/kind group only
+  const group = btn.parentElement;
+  group.querySelectorAll(".lvl-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  showStepError("");
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function showStepError(msg) {
+  const el = document.getElementById("stepError");
+  if (el) el.textContent = msg;
+}
+
+function goNext() {
+  if (step === 0) {
+    respondent.name = document.getElementById("inName").value.trim();
+    respondent.email = document.getElementById("inEmail").value.trim();
+    respondent.manager = document.getElementById("inManager").value.trim();
+  }
+
+  if (step === totalSteps - 1) {
+    submitAssessment();
+    return;
+  }
+  step++;
+  renderStep();
+  window.scrollTo(0,0);
+}
+
+function goBack() {
+  if (step === 0) return;
+  step--;
+  renderStep();
+  window.scrollTo(0,0);
+}
+
+let chartInstance = null;
+let skillScores = { current: [], desired: [] };
+
+function submitAssessment() {
+  skillScores = { current: [], desired: [] };
+  skillOrder.forEach(skill => {
+    let curVals = [], desVals = [];
+    skillMap[skill].subs.forEach(sub => {
+      const a = answers[skill][sub];
+      if (a.current) curVals.push(a.current);
+      if (a.desired) desVals.push(a.desired);
+    });
+    const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0) / arr.length) : 0;
+    skillScores.current.push(Number(avg(curVals).toFixed(2)));
+    skillScores.desired.push(Number(avg(desVals).toFixed(2)));
+  });
+
+  document.getElementById("formCard").style.display = "none";
+  document.getElementById("resultsCard").style.display = "block";
+
+  const ctx = document.getElementById("radarCanvas").getContext("2d");
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels: skillOrder,
+      datasets: [
+        {
+          label: "Current level",
+          data: skillScores.current,
+          borderColor: "#3B82F6",
+          backgroundColor: "rgba(59,130,246,0.2)",
+          pointBackgroundColor: "#3B82F6"
+        },
+        {
+          label: "Desired level",
+          data: skillScores.desired,
+          borderColor: "#22C55E",
+          backgroundColor: "rgba(34,197,94,0.15)",
+          pointBackgroundColor: "#22C55E"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { r: { min: 0, max: 3, ticks: { stepSize: 1 } } },
+      plugins: {
+        legend: { position: "bottom" },
+        title: {
+          display: true,
+          text: (respondent.name || "Your") + " — CX Competency Chart 2026",
+          font: { size: 16, weight: "bold" },
+          padding: { bottom: 12 }
+        }
+      }
+    }
+  });
+
+  renderAnalysis();
+  prepareEmailLink();
+
+  // Auto-download the chart image immediately, so the file already exists on
+  // their machine, ready to drag into the email they open themselves below.
+  setTimeout(downloadChart, 400);
+}
+
+// Build the mailto: URL and attach it to the real <a> link's href, rather than
+// navigating via script. Browsers are far more reliable about honoring mailto
+// on a direct click on a real link than on a scripted window.location change.
+function prepareEmailLink() {
+  const subject = (respondent.name || "CXT") + " - CX Competency Chart 2026";
+  const body = buildResultsText() +
+    "\n\n---\nIMPORTANT: Your chart image has been downloaded to your computer " +
+    "(look for a file named \"" + (respondent.name || "Respondent").replace(/[^a-z0-9_-]+/gi, "_") +
+    "_CX_Competency_Chart_2026.png\" in your Downloads folder). " +
+    "Please attach it to this email before hitting Send, a browser cannot attach it automatically.";
+  const to = "rakshita.singhal@capgemini.com";
+  const mailto = "mailto:" + encodeURIComponent(to) +
+    "?subject=" + encodeURIComponent(subject) +
+    "&body=" + encodeURIComponent(body);
+  const link = document.getElementById("emailLink");
+  if (link) link.href = mailto;
+}
+
+function computeAnalysis() {
+  const items = skillOrder.map((skill, i) => ({
+    skill,
+    current: skillScores.current[i],
+    desired: skillScores.desired[i],
+    gap: skillScores.desired[i] - skillScores.current[i]
+  })).filter(it => it.current > 0 || it.desired > 0); // only skills actually answered
+
+  if (!items.length) return null;
+
+  const byCurrentDesc = [...items].sort((a, b) => b.current - a.current);
+  const byCurrentAsc = [...items].sort((a, b) => a.current - b.current);
+  const byGapDesc = [...items].sort((a, b) => b.gap - a.gap).filter(it => it.gap > 0);
+
+  const strengths = byCurrentDesc.slice(0, 3);
+  const weaknesses = byCurrentAsc.slice(0, 3);
+  const focusAreas = byGapDesc.slice(0, 3);
+
+  const goals = focusAreas.map(fa => {
+    const subs = skillMap[fa.skill].subs;
+    let weakestSub = subs[0], weakestVal = Infinity;
+    subs.forEach(sub => {
+      const c = answers[fa.skill][sub].current;
+      if (c && c < weakestVal) { weakestVal = c; weakestSub = sub; }
+    });
+    return { skill: fa.skill, current: fa.current, desired: fa.desired, weakestSub };
+  });
+
+  return { strengths, weaknesses, focusAreas, goals };
+}
+
+function levelLabel(score) {
+  if (score < 1.5) return "foundational";
+  if (score < 2.2) return "developing";
+  if (score < 2.7) return "proficient";
+  return "advanced";
+}
+
+function analysisSection(title, lines) {
+  if (!lines.length) return "";
+  return `<div class="analysis-section"><h3>${title}</h3><ol>${lines.map(l => `<li>${l}</li>`).join("")}</ol></div>`;
+}
+
+function buildSummary(a) {
+  const topSkill = a.strengths[0];
+  const focusSkill = a.focusAreas[0];
+  if (!topSkill) return "";
+  let s = `Based on your self-assessment, your profile currently centers on ` +
+    `<strong>${topSkill.skill}</strong>, where you rate yourself at a ${levelLabel(topSkill.current)} standard.`;
+  if (focusSkill) {
+    s += ` The clearest development opportunity sits in <strong>${focusSkill.skill}</strong>, ` +
+      `where your ambition (${focusSkill.desired.toFixed(1)}/3) currently outpaces your experience ` +
+      `(${focusSkill.current.toFixed(1)}/3) by the widest margin in your profile.`;
+  }
+  return `<p class="analysis-summary">${s}</p>`;
+}
+
+function renderAnalysis() {
+  const el = document.getElementById("analysisBlock");
+  const a = computeAnalysis();
+  if (!a) { el.innerHTML = ""; return; }
+  const fmt = n => n.toFixed(1);
+
+  let html = buildSummary(a);
+
+  html += analysisSection("Key strengths",
+    a.strengths.map(s => `<strong>${s.skill}</strong> — rated at a ${levelLabel(s.current)} standard (${fmt(s.current)}/3), one of the areas you feel most confident applying today.`));
+
+  html += analysisSection("Growth areas",
+    a.weaknesses.map(s => `<strong>${s.skill}</strong> — rated at a ${levelLabel(s.current)} standard (${fmt(s.current)}/3), reflecting more limited hands-on exposure to date.`));
+
+  html += analysisSection("Priority focus areas",
+    a.focusAreas.map(s => `<strong>${s.skill}</strong> — ambition of ${fmt(s.desired)}/3 against a current level of ${fmt(s.current)}/3, a gap of ${fmt(s.gap)} that makes this a high-value area to prioritize.`));
+
+  html += analysisSection("Recommended development goals",
+    a.goals.map(g => `Build capability in <strong>${g.skill}</strong> by starting with "${g.weakestSub}", the sub-skill currently holding this area back the most, through a stretch assignment, shadowing a colleague experienced in this domain, or targeted training over the next development cycle.`));
+
+  el.innerHTML = html || "<p>Not enough variation in your answers to generate a meaningful analysis.</p>";
+}
+
+function buildResultsText() {
+  let lines = [];
+  lines.push("CXT Competency Self-Assessment");
+  lines.push("Name: " + respondent.name);
+  lines.push("Email: " + respondent.email);
+  lines.push("Manager email: " + respondent.manager);
+  lines.push("");
+  lines.push("Skill | Current | Desired");
+  skillOrder.forEach((skill, i) => {
+    lines.push(skill + " | " + skillScores.current[i] + " | " + skillScores.desired[i]);
+  });
+
+  const a = computeAnalysis();
+  if (a) {
+    const fmt = n => n.toFixed(1);
+    lines.push("");
+    lines.push("KEY STRENGTHS:");
+    a.strengths.forEach(s => lines.push("- " + s.skill + ": rated " + levelLabel(s.current) + " (" + fmt(s.current) + "/3)"));
+    lines.push("");
+    lines.push("GROWTH AREAS:");
+    a.weaknesses.forEach(s => lines.push("- " + s.skill + ": rated " + levelLabel(s.current) + " (" + fmt(s.current) + "/3)"));
+    lines.push("");
+    lines.push("PRIORITY FOCUS AREAS:");
+    a.focusAreas.forEach(s => lines.push("- " + s.skill + ": " + fmt(s.current) + " -> " + fmt(s.desired) + " (gap of " + fmt(s.gap) + ")"));
+    lines.push("");
+    lines.push("RECOMMENDED DEVELOPMENT GOALS:");
+    a.goals.forEach(g => lines.push("- Build capability in " + g.skill + ", starting with \"" + g.weakestSub + "\""));
+  }
+  return lines.join("\n");
+}
+
+function downloadChart() {
+  const canvas = document.getElementById("radarCanvas");
+  const safeName = (respondent.name || "Respondent").replace(/[^a-z0-9_-]+/gi, "_");
+  const link = document.createElement("a");
+  link.download = safeName + "_CX_Competency_Chart_2026.png";
+  link.href = canvas.toDataURL("image/png", 1.0);
+  link.click();
+}
+
+function copyResults() {
+  const ta = document.getElementById("resultsText");
+  ta.style.display = "block";
+  ta.value = buildResultsText();
+  ta.select();
+  document.execCommand("copy");
+}
+
+renderStep();
+</script>
+</body>
+</html>
